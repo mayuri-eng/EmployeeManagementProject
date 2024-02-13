@@ -1,5 +1,7 @@
 package com.example.demo.entity;
 
+import java.util.ArrayList;
+
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,7 +34,7 @@ public class Employee {
 	@ManyToMany
 	@JsonIgnore
 	@JoinTable(name = "test_result", joinColumns = @JoinColumn(name = "employee_id"), inverseJoinColumns = @JoinColumn(name = "test_id"))
-	private List<QuestionTest> tests;
+	private List<QuestionTest> tests=new ArrayList<>();
 
 	public Long getEmployee_id() {
 		return employee_id;

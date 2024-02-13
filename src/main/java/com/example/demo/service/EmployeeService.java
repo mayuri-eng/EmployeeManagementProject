@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.Employee;
+import com.example.demo.entity.QuestionTest;
 
 
 public interface EmployeeService {
@@ -19,6 +20,10 @@ public interface EmployeeService {
 
 	String delete(Long id);
 
-	void assignTest(Long employeeId, Employee test);
+//	void assignTest(Long employeeId, Employee test);
+
+	void assignTestToEmployee(Long employeeId, Long testId);
+
+	List<QuestionTest> getAllAssignedTests(Long employeeId);
 
 }

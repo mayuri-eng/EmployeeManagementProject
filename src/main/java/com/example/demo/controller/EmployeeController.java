@@ -15,15 +15,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.demo.entity.AssignTestDto;
 import com.example.demo.entity.Employee;
-import com.example.demo.exception.CategoryNotFoundException;
+import com.example.demo.entity.QuestionTest;
 import com.example.demo.exception.EmployeeNotFoundException;
 import com.example.demo.service.EmployeeService;
 
-import io.swagger.models.HttpMethod;
+import jakarta.persistence.EntityNotFoundException;
 
 @RestController
 @RequestMapping(value = "api/v1/employees")
@@ -33,22 +35,18 @@ public class EmployeeController {
 
 	@Autowired
 	EmployeeService employeeService;
-	
-	@Autowired
-    private RestTemplate restTemplate;
 
 	@PostMapping
 	public Employee saveData(@RequestBody Employee employee) {
 		Employee emp = new Employee();
 		try {
 			emp = employeeService.save(employee);
-			log.info("Category Request:{}", emp);
+			log.info("Employee Request:{}", emp);
 		} catch (EmployeeNotFoundException e) {
-			log.error("Exception in save data in EmployeeController" + e.getMessage());
+			log.error("Exception in save data in EmployeeController " + e.getMessage());
 		}
 		return emp;
 	}
-
 
 	@GetMapping
 	public List<Employee> findAllEmployee() {
@@ -90,14 +88,15 @@ public class EmployeeController {
 			log.info("Update employee Request: {}", employee);
 			Employee employeeUpdate = employeeService.update(employee);
 			return ResponseEntity.ok(employeeUpdate);
-		} catch (CategoryNotFoundException e) {
+		} catch (EmployeeNotFoundException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("employee not found");
 
 		}
 	}
+
 //
 	@DeleteMapping("/{id}")
-	public String deleteCategory(@PathVariable("id") Long id) {
+	public String deleteEmployee(@PathVariable("id") Long id) {
 		try {
 			return employeeService.delete(id);
 		} catch (EmployeeNotFoundException e) {
@@ -106,19 +105,31 @@ public class EmployeeController {
 		}
 	}
 
-	 @PostMapping("/{employeeId}/assign-test/{testId}")
-	    public ResponseEntity<String> assignTestToEmployee(@PathVariable Long employeeId, @PathVariable Long testId) {
-	        // Call the Test Management Module to get the test details
-	        ResponseEntity<Employee> responseEntity = restTemplate.exchange("http://test-management-service/tests/{testId}",
-	                HttpMethod.GET, null, Employee.class, testId);
+	@PostMapping("/assign-test")
+	public ResponseEntity<AssignTestDto> assignTestToEmployee(@RequestBody AssignTestDto assignTestDto) {
+		try {
 
-	        if (responseEntity.getStatusCode() == HttpStatus.OK) {
-	        	Employee test = responseEntity.getBody();
-	            // Assign the test to the employee
-	            employeeService.assignTest(employeeId, test);
-	            return ResponseEntity.ok("Test assigned to employee successfully.");
-	        } else {
-	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error assigning test to employee.");
-	        }
-	    }
+			employeeService.assignTestToEmployee(assignTestDto.getEmployee_id(), assignTestDto.getTest_id());
+			AssignTestDto responseDto = new AssignTestDto();
+			responseDto.setEmployee_id(assignTestDto.getEmployee_id());
+			responseDto.setTest_id(assignTestDto.getTest_id());
+			return ResponseEntity.ok(assignTestDto);
+		} catch (EntityNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+	
+	@GetMapping("/assigned-tests/{employeeId}")
+    public ResponseEntity<List<QuestionTest>> getAllAssignedTests(@PathVariable Long employeeId) {
+        try {
+            List<QuestionTest> assignedTests = employeeService.getAllAssignedTests(employeeId);
+            return ResponseEntity.ok(assignedTests);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }

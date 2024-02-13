@@ -9,9 +9,12 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.Employee;
 import com.example.demo.entity.QuestionTest;
-import com.example.demo.exception.CategoryNotFoundException;
+import com.example.demo.exception.EmployeeNotFoundException;
 import com.example.demo.exception.QuestionTestNotFoundException;
 import com.example.demo.repo.EmployeeRepo;
+import com.example.demo.repo.QuestionTestRepo;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -19,14 +22,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Autowired
 	EmployeeRepo employeeRepo;
 	
-	
+	@Autowired
+	QuestionTestRepo questionTestRepo;
 
 	@Override
 	public Employee save(Employee employee) {
 		try {
 			return employeeRepo.save(employee);
-		} catch (Exception e) {
-			throw new QuestionTestNotFoundException("Error saving employee: " + e.getMessage());
+		} catch (EmployeeNotFoundException e) {
+			throw new EmployeeNotFoundException("Error saving employee: " + e.getMessage());
 		}
 	}
 
@@ -34,8 +38,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public List<Employee> findAll() {
 		try {
 			return employeeRepo.findAll();
-		} catch (Exception e) {
-			throw new QuestionTestNotFoundException("Error saving Employee: " + e.getMessage());
+		} catch (EmployeeNotFoundException e) {
+			throw new EmployeeNotFoundException("Error saving Employee: " + e.getMessage());
 		}
 	}
 
@@ -46,7 +50,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 			if (employee.isPresent()) {
 				return employeeRepo.findById(id).get();
 			} else {
-				throw new Exception("Employee not found for ID: " + id);
+				throw new EmployeeNotFoundException("Employee not found for ID: " + id);
 
 			}
 
@@ -75,7 +79,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		try {
 			Employee emp = findById(employeeId);
 			if (emp == null) {
-				throw new Exception("employeeId not found for ID: " + emp);
+				throw new EmployeeNotFoundException("employeeId not found for ID: " + emp);
 			}
 
 			return employeeRepo.save(employee);
@@ -84,4 +88,38 @@ public class EmployeeServiceImpl implements EmployeeService {
 		}
 
 	}
+
+	@Override
+	public void assignTestToEmployee(Long employeeId, Long testId) {
+		try {
+		Optional<Employee> optionalEmployee = employeeRepo.findById(employeeId);
+	    Optional<QuestionTest> optionalTest = questionTestRepo.findById(testId);
+	    
+	    if (optionalEmployee.isPresent() && optionalTest.isPresent()) {
+	        Employee employee = optionalEmployee.get();
+	        QuestionTest test = optionalTest.get();
+	        
+	        // Assign test to employee
+	        employee.getTests().add(test);
+	        
+	        // Save the updated employee
+	        employeeRepo.save(employee);
+	    } else {
+	        throw new EntityNotFoundException("Employee or Test not found.");
+	    }
+	}
+		catch (Exception e) {
+		throw new ServiceException("Error assignTestToEmployee : " + e.getMessage(), e);
+	}
+	}
+	@Override
+	public List<QuestionTest> getAllAssignedTests(Long employeeId) {
+        Optional<Employee> optionalEmployee = employeeRepo.findById(employeeId);
+        if (optionalEmployee.isPresent()) {
+            Employee employee = optionalEmployee.get();
+            return employee.getTests(); // Assuming you have a getter method for the tests in Employee entity
+        } else {
+            throw new EntityNotFoundException("Employee with ID " + employeeId + " not found.");
+        }
+    }
 }
