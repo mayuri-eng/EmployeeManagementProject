@@ -53,11 +53,11 @@ public class EmployeeControllerTest {
 		employee.setLastName("patil");
 		employee.setEmail("abc@gmail.com");
 		employee.setEmployee_id(1L);
-		when(employeeService.save(any(Employee.class))).thenReturn(employee);
+		when(employeeService.register(any(Employee.class))).thenReturn(employee);
 
-		Employee savedEmployee = employeeController.saveData(employee);
+		ResponseEntity<Employee> savedEmployee = employeeController.registerEmployee(employee);
 
-		assertEquals(1L, savedEmployee.getEmployee_id());
+		assertEquals(1L, savedEmployee.getBody().getEmployee_id());
 	}
 
 	@Test
@@ -68,9 +68,11 @@ public class EmployeeControllerTest {
 		employee.setLastName("patil");
 		employee.setEmail("abc@gmail.com");
 		employee.setEmployee_id(1L);
-		when(employeeService.save(any(Employee.class))).thenThrow(new EmployeeNotFoundException("Employee not found"));
+		when(employeeService.register(any(Employee.class))).thenThrow(new EmployeeNotFoundException("Employee not found"));
 
-		Employee savedEmployee = employeeController.saveData(employee);
+		ResponseEntity<Employee> savedEmployee = employeeController.registerEmployee(employee);
+		assertEquals(1L, savedEmployee.getBody().getEmployee_id());
+
 
 	}
 

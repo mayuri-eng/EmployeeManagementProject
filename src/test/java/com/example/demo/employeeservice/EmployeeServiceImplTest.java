@@ -52,7 +52,7 @@ public class EmployeeServiceImplTest {
 		employee.setEmployee_id(1L);
 		employee.setPassword("admin");
 		when(employeeRepo.save(any(Employee.class))).thenReturn(new Employee());
-		employeeService.save(employee);
+		employeeService.register(employee);
 
 		verify(employeeRepo, times(1)).save(employee);
 	}
@@ -67,7 +67,7 @@ public class EmployeeServiceImplTest {
 		when(employeeRepo.save(employeeToSave)).thenThrow(EmployeeNotFoundException.class);
 
 		assertThrows(EmployeeNotFoundException.class, () -> {
-			employeeService.save(employeeToSave);
+			employeeService.register(employeeToSave);
 		});
 	}
 

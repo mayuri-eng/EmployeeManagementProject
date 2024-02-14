@@ -37,16 +37,29 @@ public class EmployeeController {
 	EmployeeService employeeService;
 
 	@PostMapping
-	public Employee saveData(@RequestBody Employee employee) {
+	public ResponseEntity<Employee> registerEmployee(@RequestBody Employee employee) {
 		Employee emp = new Employee();
 		try {
-			emp = employeeService.save(employee);
+			emp = employeeService.register(employee);
 			log.info("Employee Request:{}", emp);
+
 		} catch (EmployeeNotFoundException e) {
 			log.error("Exception in save data in EmployeeController " + e.getMessage());
 		}
-		return emp;
+        return ResponseEntity.ok(emp);
+		
 	}
+	
+	
+	@PostMapping("/login")
+    public ResponseEntity<String> loginEmployee(@RequestParam("email") String email, @RequestParam("password") String password) {
+		 if (employeeService.login(email, password)) {
+	            return ResponseEntity.ok("Login successful");
+	        } else {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+	        }
+	      
+    }
 
 	@GetMapping
 	public List<Employee> findAllEmployee() {

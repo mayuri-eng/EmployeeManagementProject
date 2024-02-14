@@ -26,7 +26,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	QuestionTestRepo questionTestRepo;
 
 	@Override
-	public Employee save(Employee employee) {
+	public Employee register(Employee employee) {
 		try {
 			return employeeRepo.save(employee);
 		} catch (EmployeeNotFoundException e) {
@@ -98,11 +98,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	    if (optionalEmployee.isPresent() && optionalTest.isPresent()) {
 	        Employee employee = optionalEmployee.get();
 	        QuestionTest test = optionalTest.get();
-	        
-	        // Assign test to employee
 	        employee.getTests().add(test);
-	        
-	        // Save the updated employee
 	        employeeRepo.save(employee);
 	    } else {
 	        throw new EntityNotFoundException("Employee or Test not found.");
@@ -122,4 +118,16 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new EntityNotFoundException("Employee with ID " + employeeId + " not found.");
         }
     }
+
+	@Override
+	public boolean login(String email, String password) {
+		   Optional<Employee> optionalEmployee = employeeRepo.findByEmail(email);
+	        if (optionalEmployee.isPresent()) {
+	            Employee employee = optionalEmployee.get();
+	            return employee.getPassword().equals(password);
+	        }
+	        return false;
+
+	}
+	
 }
