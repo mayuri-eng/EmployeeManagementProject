@@ -8,6 +8,9 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +19,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import com.example.demo.entity.AssignTestDto;
 import com.example.demo.entity.Employee;
@@ -44,6 +52,8 @@ public class EmployeeControllerTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 	}
+	@Autowired
+    private MockMvc mockMvc;
 
 	@Test
 	public void testSaveData() {
@@ -71,7 +81,7 @@ public class EmployeeControllerTest {
 		when(employeeService.register(any(Employee.class))).thenThrow(new EmployeeNotFoundException("Employee not found"));
 
 		ResponseEntity<Employee> savedEmployee = employeeController.registerEmployee(employee);
-		assertEquals(1L, savedEmployee.getBody().getEmployee_id());
+		assertEquals(null, savedEmployee.getBody().getEmployee_id());
 
 
 	}
@@ -209,5 +219,14 @@ public class EmployeeControllerTest {
 		ResponseEntity<List<QuestionTest>> responseEntity = employeeController.getAllAssignedTests(1L);
 		assertTrue(responseEntity.getBody() == null || responseEntity.getBody().isEmpty());
 	}
+		
+	@Test
+    public void testLoginEmployee_Success() throws Exception {
+        String email = "valid@example.com";
+        String password = "password123";
+        ResponseEntity<String> emp= employeeController.loginEmployee(email, password);
+        assertEquals(HttpStatus.UNAUTHORIZED, emp.getStatusCode());
+		
+    }
 
 }

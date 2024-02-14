@@ -171,4 +171,38 @@ public class EmployeeServiceImplTest {
 	            employeeService.getAllAssignedTests(1L);
 	        });
 	    }
+	
+	 @Test
+	    public void testLogin_Success() {
+	        String email = "valid@example.com";
+	        String password = "password123";
+	        Employee employee = new Employee();
+	        employee.setEmail(email);
+	        employee.setPassword(password);
+
+	        when(employeeRepo.findByEmail(email)).thenReturn(Optional.of(employee));
+	        boolean result = employeeService.login(email, password);
+
+	        assertTrue(result);
+	    }
+
+	    @Test
+	    public void testLogin_InvalidEmail() {
+	        String email = "invalid@example.com";
+	        String password = "password123";
+	        when(employeeRepo.findByEmail(email)).thenReturn(Optional.empty());
+	        boolean result = employeeService.login(email, password);
+	        assertFalse(result);
+	    }
+	    @Test
+	    public void testLogin_InvalidPassword() {
+	        String email = "valid@example.com";
+	        String password = "invalidPassword";
+	        Employee employee = new Employee();
+	        employee.setEmail(email);
+	        employee.setPassword("password123"); // Different password
+	        when(employeeRepo.findByEmail(email)).thenReturn(Optional.of(employee));
+	        boolean result = employeeService.login(email, password);
+	        assertFalse(result);
+	    }
 }
