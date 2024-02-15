@@ -77,7 +77,7 @@ public class EmployeeController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> findByIdEmployee(@PathVariable("id") Long id) {
+	public ResponseEntity<?> findByIdEmployee(@PathVariable("idi") Long id) {
 		try {
 			if (id != null) {
 				Employee employee = employeeService.findById(id);
@@ -107,7 +107,7 @@ public class EmployeeController {
 		}
 	}
 
-//
+
 	@DeleteMapping("/{id}")
 	public String deleteEmployee(@PathVariable("id") Long id) {
 		try {
