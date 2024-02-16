@@ -5,26 +5,30 @@ import java.util.Optional;
 
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.demo.entity.AssignTest;
+import com.example.demo.entity.AssignTestResponse;
 import com.example.demo.entity.Employee;
 import com.example.demo.entity.QuestionTest;
 import com.example.demo.exception.EmployeeNotFoundException;
+import com.example.demo.repo.AssignTestRepo;
 import com.example.demo.repo.EmployeeRepo;
-import com.example.demo.repo.QuestionTestRepo;
 
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
-	
+
 	@Autowired
 	EmployeeRepo employeeRepo;
-	
+
 	@Autowired
-	QuestionTestRepo questionTestRepo;
+	AssignTestRepo assignTestRepo;
+
+	@Autowired
+	private RestTemplate restTemplate;
 
 	@Override
 	public Employee register(Employee employee) {
@@ -90,36 +94,34 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	}
 
-	
-
-	  
 	@Override
 	public void assignTestToEmployee(Long employeeId, Long testId) {
 		try {
-			Optional<Employee> optionalEmployee = employeeRepo.findById(employeeId);
-		    if (optionalEmployee.isEmpty()) {
-		        throw new EntityNotFoundException("Employee with ID " + employeeId + " not found.");
-		    }
-		    Optional<QuestionTest> optionalTest = questionTestRepo.findById(testId);
-		    if (optionalTest.isEmpty()) {
-		        throw new EntityNotFoundException("Test with ID " + testId + " not found.");
-		    }
-		    else if (optionalEmployee.isPresent() && optionalTest.isPresent()) {
-		        Employee employee = optionalEmployee.get();
-		        QuestionTest test = optionalTest.get();
-		        employee.getTests().add(test);
-		        employeeRepo.save(employee);
-		    } else {
-		        throw new EntityNotFoundException("Employee or Test not found.");
-		    }
+			// Check if the employee exists
+			Employee employee = employeeRepo.findById(employeeId).orElse(null);
+			if (employee == null) {
+				throw new EntityNotFoundException("Employee with ID " + employeeId + " not found.");
+			}
+
+			String testUrl = "http://localhost:8081/api/v1/test/" + testId; // Corrected URL
+
+			QuestionTest testDto = restTemplate.getForObject(testUrl, QuestionTest.class);
+			AssignTest assignTest = new AssignTest();
+			assignTest.setEmployee_id(employee.getEmployee_id());
+			assignTest.setTest_id(testDto.getTestId());
+
+			assignTestRepo.save(assignTest);
+
+			// Use the retrieved test details
+
+		} catch (EntityNotFoundException e) {
+			throw e; // Rethrow EntityNotFoundException directly
+		} catch (Exception e) {
+			throw new ServiceException("Error assignTestToEmployee: " + e.getMessage(), e);
 		}
-			catch (Exception e) {
-			throw new ServiceException("Error assignTestToEmployee : " + e.getMessage(), e);
-		}
-			
-			
-			
-	//	}
+	}
+
+	// }
 //		Optional<Employee> optionalEmployee = employeeRepo.findById(employeeId);
 //		 Optional<QuestionTest> optionalTest = questionTestRepo.findById(testId);
 //		if(optionalEmployee.isPresent()) {
@@ -129,7 +131,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 //			 test.getTestId();
 //		}    
 //		else 
-		
+
 //		 
 //		        RestTemplate restTemplate = new RestTemplate();
 //		        String assignTestUrl = EMPLOYEE_SERVICE_URL + "/api/v1/employees/assign-test";
@@ -140,28 +142,57 @@ public class EmployeeServiceImpl implements EmployeeService {
 //		        } else {
 //		            System.err.println("Failed to assign test: " + response.getBody());
 //		        }
-		    }
-	
-	@Override
-	public List<QuestionTest> getAllAssignedTests(Long employeeId) {
-        Optional<Employee> optionalEmployee = employeeRepo.findById(employeeId);
-        if (optionalEmployee.isPresent()) {
-            Employee employee = optionalEmployee.get();
-            return employee.getTests(); 
-        } else {
-            throw new EntityNotFoundException("Employee with ID " + employeeId + " not found.");
-        }
-    }
+	// }
+
+//	@Override
+//	public List<QuestionTest> getAllAssignedTests(Long employeeId) {
+//        Optional<Employee> optionalEmployee = employeeRepo.findById(employeeId);
+//        if (optionalEmployee.isPresent()) {
+//            Employee employee = optionalEmployee.get();
+//            return employee.getTests(); 
+//        } else {
+//            throw new EntityNotFoundException("Employee with ID " + employeeId + " not found.");
+//        }
+//    }
 
 	@Override
 	public boolean login(String email, String password) {
-		   Optional<Employee> optionalEmployee = employeeRepo.findByEmail(email);
-	        if (optionalEmployee.isPresent()) {
-	            Employee employee = optionalEmployee.get();
-	            return employee.getPassword().equals(password);
-	        }
-	        return false;
+		Optional<Employee> optionalEmployee = employeeRepo.findByEmail(email);
+		if (optionalEmployee.isPresent()) {
+			Employee employee = optionalEmployee.get();
+			return employee.getPassword().equals(password);
+		}
+		return false;
 
 	}
-	
+
+	@Override
+	public AssignTestResponse getAllAssignedTests(Long employeeId) {
+		Employee employee = employeeRepo.findById(employeeId).orElse(null);
+		if (employee == null) {
+			throw new RuntimeException("Employee with ID " + employeeId + " not found.");
+		}
+		List<AssignTest> test = assignTestRepo.findByEmployeeId(employeeId);
+		AssignTestResponse response = new AssignTestResponse();
+		response.setEmployee_id(employee.getEmployee_id());
+		response.setFirstName(employee.getFirstName());
+		response.setLastName(employee.getLastName());
+		response.setEmail(employee.getEmail());
+		response.setPassword(employee.getPassword());
+		response.setList(test);
+
+		return response;
+	}
+
+//	@Override
+//	public List<AssignTestResponse> getAllAssignedTests(Long employeeId) {
+//		 Optional<AssignTest> assignedTest = assignTestRepo.findById(employeeId);
+//	        if (assignedTest.isPresent()) {
+//	            throw new EntityNotFoundException("No assigned tests found for employee with ID " + employeeId);
+//
+//	        } else {
+//	            throw new EntityNotFoundException("Employee with ID " + employeeId + " not found.");
+//	        }
+//	}
+
 }

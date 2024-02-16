@@ -17,11 +17,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
-import com.example.demo.entity.AssignTestDto;
+import com.example.demo.entity.AssignTest;
+import com.example.demo.entity.AssignTestResponse;
 import com.example.demo.entity.Employee;
-import com.example.demo.entity.QuestionTest;
 import com.example.demo.exception.EmployeeNotFoundException;
 import com.example.demo.service.EmployeeService;
 
@@ -119,25 +118,26 @@ public class EmployeeController {
 	}
 
 	@PostMapping("/assign-test")
-	public ResponseEntity<AssignTestDto> assignTestToEmployee(@RequestBody AssignTestDto assignTestDto) {
-		try {
+	public AssignTest assignTestToEmployee(@RequestBody AssignTest assignTest) {
+	
+         try {
+			employeeService.assignTestToEmployee(assignTest.getEmployee_id(), assignTest.getTest_id());
+			AssignTest response= new AssignTest();
+			response.setEmployee_id(assignTest.getEmployee_id());
+			response.setTest_id(assignTest.getTest_id());
+			return response;
+         } catch (EmployeeNotFoundException e) {
+ 			log.error("Error assignTestToEmployee {}: {}" +e.getMessage());
 
-			employeeService.assignTestToEmployee(assignTestDto.getEmployee_id(), assignTestDto.getTest_id());
-			AssignTestDto responseDto = new AssignTestDto();
-			responseDto.setEmployee_id(assignTestDto.getEmployee_id());
-			responseDto.setTest_id(assignTestDto.getTest_id());
-			return ResponseEntity.ok(assignTestDto);
-		} catch (EntityNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-		}
+ 		}
+		return assignTest;
+		
 	}
 	
 	@GetMapping("/assigned-tests/{employeeId}")
-    public ResponseEntity<List<QuestionTest>> getAllAssignedTests(@PathVariable Long employeeId) {
+    public ResponseEntity<AssignTestResponse> getAllAssignedTests(@PathVariable Long employeeId) {
         try {
-            List<QuestionTest> assignedTests = employeeService.getAllAssignedTests(employeeId);
+           AssignTestResponse  assignedTests = employeeService.getAllAssignedTests(employeeId);
             return ResponseEntity.ok(assignedTests);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);

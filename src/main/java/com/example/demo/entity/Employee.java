@@ -31,10 +31,10 @@ public class Employee {
 	private String email;
 	private String password;
 	
-	@ManyToMany
-	@JsonIgnore
-	@JoinTable(name = "test_result", joinColumns = @JoinColumn(name = "employee_id"), inverseJoinColumns = @JoinColumn(name = "test_id"))
-	private List<QuestionTest> tests=new ArrayList<>();
+//	@ManyToMany
+//	@JsonIgnore
+//	@JoinTable(name = "test_result", joinColumns = @JoinColumn(name = "employee_id"), inverseJoinColumns = @JoinColumn(name = "test_id"))
+//	private List<QuestionTest> tests=new ArrayList<>();
 
 	public Long getEmployee_id() {
 		return employee_id;
@@ -76,39 +76,30 @@ public class Employee {
 		this.password = password;
 	}
 
-	public List<QuestionTest> getTests() {
-		return tests;
-	}
-
-	public void setTests(List<QuestionTest> tests) {
-		this.tests = tests;
-	}
-
 	@Override
 	public String toString() {
 		return "Employee [employee_id=" + employee_id + ", firstName=" + firstName + ", lastName=" + lastName
-				+ ", email=" + email + ", password=" + password + ", tests=" + tests + ", getEmployee_id()="
-				+ getEmployee_id() + ", getFirstName()=" + getFirstName() + ", getLastName()=" + getLastName()
-				+ ", getEmail()=" + getEmail() + ", getPassword()=" + getPassword() + ", getTests()=" + getTests()
-				+ ", getClass()=" + getClass() + ", hashCode()=" + hashCode() + ", toString()=" + super.toString()
-				+ "]";
+				+ ", email=" + email + ", password=" + password + "]";
 	}
 
-	public Employee(Long employee_id, String firstName, String lastName, String email, String password,
-			List<QuestionTest> tests) {
-		super();
-		this.employee_id = employee_id;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.email = email;
-		this.password = password;
-		this.tests = tests;
-	}
+//	public Employee(Long employee_id, String firstName, String lastName, String email, String password) {
+//		super();
+//		this.employee_id = employee_id;
+//		this.firstName = firstName;
+//		this.lastName = lastName;
+//		this.email = email;
+//		this.password = password;
+//	}
 
-	public Employee() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+//	public List<QuestionTest> getTests() {
+//		return tests;
+//	}
+//
+//	public void setTests(List<QuestionTest> tests) {
+//		this.tests = tests;
+//	}
+
+	
 
 	
 

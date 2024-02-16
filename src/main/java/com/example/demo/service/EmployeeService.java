@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.entity.AssignTestResponse;
 import com.example.demo.entity.Employee;
 import com.example.demo.entity.QuestionTest;
 
@@ -24,7 +25,7 @@ public interface EmployeeService {
 
 	void assignTestToEmployee(Long employeeId, Long testId);
 
-	List<QuestionTest> getAllAssignedTests(Long employeeId);
+	AssignTestResponse getAllAssignedTests(Long employeeId);
 
 	Employee register(Employee employee);
 
